@@ -1,0 +1,122 @@
+import pygame
+import random
+
+FPS = 60
+pygame.init()
+BLACK = (0,0,0)
+WHITE = (255,255,255)
+GREEN = (0, 255, 0)
+BLUE = (0,0,255)
+YELLOW = (255,255,0)
+RED = (255,0,0)
+PINK = (238,132,250)
+
+highscore = 0
+
+ROW = 10
+COLUMN = 10
+WINDOWWIDTH = 640
+WINDOWHEIGHT = 480
+screen = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
+Clock=pygame.time.Clock()
+font = pygame.font.SysFont('Arial',25, True, False) 
+def main(highscore):
+    pygame.display.set_caption('Flooooooood meeeee!')
+    times_changed = 0
+    board = []
+    board = generateBoard(board)
+    while True:
+        screen.fill(WHITE)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            mouse = pygame.mouse.get_pos()
+            showMap(board)
+            times_changed = buttons(board, mouse, times_changed)
+            highscoretxt = font.render("Highscore: " + str(highscore), True, BLACK)
+            times_changedtext=font.render(str(times_changed) + " turns",True, BLACK)
+            screen.blit(times_changedtext, [250,0])
+            screen.blit(highscoretxt,[250,100])
+            if(checkEnd(board))==True:
+                if(times_changed < highscore or highscore == 0):
+                    highscore = times_changed
+                main(highscore)
+            pygame.display.flip()            
+                
+                
+        Clock.tick(FPS)
+def generateBoard(board):
+    for i in range(ROW):
+        board.append([])
+        for j in range(COLUMN):
+            board[i].append(random.randrange(0,5)) # GENERETING MAPS!!!!!
+    return board
+
+def checkEnd(board):
+    checked= 0
+    for x in range(ROW):
+        for y in range(COLUMN):
+            if(board[x][y] == board[0][0]):
+                checked+=1
+    if(checked == 100):
+        return True
+
+def showMap(board):
+    for x in range(ROW):
+        for y in range(COLUMN):
+            if board[x][y] == 0:
+                board[x][y] = GREEN
+            elif board[x][y] == 1:
+                board[x][y] = BLUE
+            elif board[x][y] == 2:
+                board[x][y] = YELLOW  
+            elif board[x][y] == 3:
+                board[x][y] = RED
+            elif board[x][y] == 4:
+                board[x][y] = PINK    
+    for x in range(0,ROW):
+        for y in range(0,COLUMN):                
+            pygame.draw.rect(screen, board[x][y], [0+(y*20), 0+(x*20), 20, 20])
+
+def buttons(board, mouse, times_changed):
+    click = pygame.mouse.get_pressed()
+    gr = pygame.draw.rect(screen, GREEN, [0,250,40,40])
+    bl = pygame.draw.rect(screen, BLUE, [40,250,40,40])
+    yel= pygame.draw.rect(screen, YELLOW, [80,250,40,40])
+    re = pygame.draw.rect(screen, RED, [120,250,40,40])
+    pink = pygame.draw.rect(screen, PINK, [160,250,40,40])
+    if(gr.collidepoint(mouse) and click[0] == 1) and (board[0][0] != GREEN):
+        paint(board, board[0][0], GREEN, 0, 0)
+        times_changed+=1
+        
+    if(bl.collidepoint(mouse) and click[0] == 1 and (board[0][0] != BLUE)):
+        paint(board, board[0][0], BLUE, 0, 0)
+        times_changed+=1        
+    if(yel.collidepoint(mouse) and click[0] == 1 and (board[0][0] != YELLOW)):
+        paint(board, board[0][0], YELLOW, 0, 0)
+        times_changed+=1        
+    if(re.collidepoint(mouse) and click[0] == 1 and (board[0][0] != RED)):
+        paint(board, board[0][0], RED, 0, 0)
+        times_changed+=1   
+    if(pink.collidepoint(mouse) and click[0] == 1 and (board[0][0] != PINK)):
+        paint(board, board[0][0], PINK, 0, 0)
+        times_changed+=1
+    return times_changed
+        
+def paint(board, oldColor, newColor, x, y):
+    if oldColor == newColor or board[x][y] != oldColor:
+        return
+
+    board[x][y] = newColor # change the color of the current box
+
+    # Make the recursive call for any neighboring boxes:
+    if x > 0:
+        paint(board, oldColor, newColor, x - 1, y) # on box to the left
+    if x < ROW - 1: #border width
+        paint(board, oldColor, newColor, x + 1, y) # on box to the right
+    if y > 0:
+        paint(board, oldColor, newColor, x, y - 1) # on box to up
+    if y < COLUMN - 1: #border height
+        paint(board, oldColor, newColor, x, y + 1) # on box to down
+    
+main(highscore)
